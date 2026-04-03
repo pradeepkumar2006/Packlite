@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "158996364610",
+    "project_id": "packlite-ba3e7",
+    "storage_bucket": "packlite-ba3e7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:158996364610:android:fd081da88a72c533f51cdb",
+        "android_client_info": {
+          "package_name": "com.example.packlite"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "158996364610-bgmkb4mvqkdku78511nf8mn2gumhito3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.packlite",
+            "certificate_hash": "5e94b2a051b2b31453560a9cafc134e97dd6e984"
+          }
+        },
+        {
+          "client_id": "158996364610-l2i4gj76tlfqk4eg0qakpm9vnqju8lu0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWjCbdQfcbO2X3jFU3Scc3IfMDHmZ7aV8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "158996364610-l2i4gj76tlfqk4eg0qakpm9vnqju8lu0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "158996364610-b9436p440p9jrv3hjr858rmto0dl4fng.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.packlite"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
