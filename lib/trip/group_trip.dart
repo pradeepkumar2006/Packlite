@@ -234,6 +234,7 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
             ),
           ),
           SliverFillRemaining(
+            hasScrollBody: true,
             child: TabBarView(
               controller: _tabCtrl,
               children: [

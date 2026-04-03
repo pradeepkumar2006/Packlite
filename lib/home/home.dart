@@ -1989,79 +1989,81 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'BAG COMMAND CENTER',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 13,
-                  letterSpacing: 1.5,
-                  color: Colors.black38,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Advanced Logistics',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 28,
-                  letterSpacing: -1,
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Backpack Logistics
-              _buildBagStatRow(
-                'BACKPACK (7kg MAX)',
-                activeTrip.items
-                    .where((i) => i.bagId == '1' && i.isPacked)
-                    .length,
-                activeTrip.items.where((i) => i.bagId == '1').length,
-                Icons.backpack_rounded,
-              ),
-              const SizedBox(height: 16),
-
-              // Suitcase Logistics
-              _buildBagStatRow(
-                'SUITCASE (23kg MAX)',
-                activeTrip.items
-                    .where(
-                      (i) => (i.bagId == '2' || i.bagId == null) && i.isPacked,
-                    )
-                    .length,
-                activeTrip.items
-                    .where((i) => i.bagId == '2' || i.bagId == null)
-                    .length,
-                Icons.luggage_rounded,
-              ),
-
-              const SizedBox(height: 48),
-              Tappable(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(100),
+        return SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'BAG COMMAND CENTER',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                    letterSpacing: 1.5,
+                    color: Colors.black38,
                   ),
-                  child: const Center(
-                    child: Text(
-                      'Close Dashboard',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Advanced Logistics',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 28,
+                    letterSpacing: -1,
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Backpack Logistics
+                _buildBagStatRow(
+                  'BACKPACK (7kg MAX)',
+                  activeTrip.items
+                      .where((i) => i.bagId == '1' && i.isPacked)
+                      .length,
+                  activeTrip.items.where((i) => i.bagId == '1').length,
+                  Icons.backpack_rounded,
+                ),
+                const SizedBox(height: 16),
+
+                // Suitcase Logistics
+                _buildBagStatRow(
+                  'SUITCASE (23kg MAX)',
+                  activeTrip.items
+                      .where(
+                        (i) => (i.bagId == '2' || i.bagId == null) && i.isPacked,
+                      )
+                      .length,
+                  activeTrip.items
+                      .where((i) => i.bagId == '2' || i.bagId == null)
+                      .length,
+                  Icons.luggage_rounded,
+                ),
+
+                const SizedBox(height: 48),
+                Tappable(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Close Dashboard',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

@@ -230,6 +230,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
                ),
              ),
              SliverFillRemaining(
+               hasScrollBody: true,
                child: TabBarView(
                  controller: _tabCtrl,
                  children: [
@@ -893,7 +894,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
             const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('ESTIMATED WEIGHT', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1, color: Colors.black26)),
               SizedBox(height: 4),
-              Text('âš–ï¸ Cabin Bag', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+              Text('⚖️ Cabin Bag', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
             ]),
             Text('${packedWeight.toStringAsFixed(1)} kg', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -1)),
           ]),
