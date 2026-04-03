@@ -1,7 +1,6 @@
-
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
-// import '../core/ai_service.dart'; // Assume this exists or will be linked
+import '../core/ai_service.dart';
 
 class Message {
   final String text;
@@ -35,15 +34,22 @@ class _AIConciergeSheetState extends State<AIConciergeSheet> {
 
     PackLiteTheme.haptic();
 
-    // Mock AI Response (In a real app, this would call AIService.getChatResponse)
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (mounted) {
-      setState(() {
-        _isTyping = false;
-        _messages.add(Message("I've analyzed your trip to Paris. The weather looks rainy, so I recommend bringing a compact umbrella and a waterproof jacket.", false));
-      });
-      PackLiteTheme.haptic();
+    try {
+      final aiRes = await AIService.chat(userText);
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+          _messages.add(Message(aiRes, false));
+        });
+        PackLiteTheme.haptic();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+          _messages.add(Message("I'm momentarily offline. Let's try again in a bit!", false));
+        });
+      }
     }
   }
 

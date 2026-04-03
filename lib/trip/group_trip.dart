@@ -2,9 +2,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
 import '../core/data.dart';
+import '../core/amazon_utils.dart';
 import 'splitt_lite.dart';
 
 // ════════════════════════════════════════════
@@ -568,14 +568,6 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
     );
   }
 
-  void _launchAmazon(String query) async {
-    final url = Uri.parse('https://www.amazon.com/s?k=$query');
-    try {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } catch (e) {
-      debugPrint('Could not launch Amazon: $e');
-    }
-  }
 
   String _getBagName(String? bagId) {
     if (bagId == null) return 'No Bag';
@@ -739,7 +731,7 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
                           const SizedBox(width: 12),
                         if (item.needsToBuy)
                           Tappable(
-                            onTap: () => _launchAmazon(item.name),
+                            onTap: () => AmazonUtils.launch(item.name),
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(10)),

@@ -143,6 +143,9 @@ class TripData {
   static List<Trip> trips = [];
   static TravelerProfile? user;
   
+  // Amazon Affiliate Configuration
+  static const String amazonTag = 'pradeep21082-21';
+  
   static void addOrUpdateTrip(Trip trip) {
     int index = trips.indexWhere((t) => t.id == trip.id);
     if (index != -1) {

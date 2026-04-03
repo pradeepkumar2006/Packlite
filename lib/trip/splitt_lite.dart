@@ -84,7 +84,7 @@ class _SplittLiteScreenState extends State<SplittLiteScreen> {
         color: Colors.black,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 40, offset: const Offset(0, 20)),
+          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 40, offset: const Offset(0, 20)),
         ],
       ),
       child: Column(

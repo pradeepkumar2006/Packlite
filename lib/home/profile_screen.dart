@@ -276,35 +276,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPassportStamps() {
-    final stamps = ['UK', 'FR', 'IN', 'US', 'JP', 'UAE'];
-    return SizedBox(
-      height: 70,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        itemCount: stamps.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) => Container(
-          width: 70,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(color: PackLiteTheme.cardBorder, width: 2),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              stamps[index],
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Colors.black87),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildSectionHeader(String title) {
     return Text(
@@ -313,41 +284,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOption(IconData icon, String label, String value) {
-    return Tappable(
-      onTap: () => PackLiteTheme.haptic(),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: PackLiteTheme.cardBorder),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 22, color: Colors.black),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              value,
-              style: TextStyle(color: PackLiteTheme.mutedText, fontSize: 12, fontWeight: FontWeight.w700),
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right_rounded, color: Colors.black12),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildTripCollections(BuildContext context) {
     final trips = TripData.trips;

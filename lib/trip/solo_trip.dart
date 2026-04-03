@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
 import '../core/data.dart';
-import 'suit_painter.dart';
+import '../core/amazon_utils.dart';
 import '../core/ai_service.dart';
+import 'suit_painter.dart';
 
 
 class SoloTripScreen extends StatefulWidget {
@@ -87,8 +87,8 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
       isCompleted: _isCompleted,
       currencyCode: widget.trip?.currencyCode ?? 'USD',
       conversionRate: widget.trip?.conversionRate ?? 1.0,
-      weatherIcon: widget.trip?.weatherIcon ?? '☀️',
-      temperature: widget.trip?.temperature ?? '--°',
+      weatherIcon: widget.trip?.weatherIcon ?? 'â˜€ï¸',
+      temperature: widget.trip?.temperature ?? '--Â°',
     ));
   }
 
@@ -215,7 +215,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                   child: Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(color: const Color(0xFFE5E5E0).withValues(alpha: 0.8), borderRadius: BorderRadius.circular(20)),
+                    decoration: BoxDecoration(color: const Color(0xFFE5E5E0).withOpacity(0.8), borderRadius: BorderRadius.circular(20)),
                     child: TabBar(
                       controller: _tabCtrl,
                       indicator: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(16)),
@@ -256,7 +256,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
           const Text('CURRENT STATUS', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.5, color: Colors.black26)),
           const SizedBox(height: 12),
           Text(_progress == 1.0 ? 'Ready to fly!' : 'Packing in progress', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -1)),
-          Text('Heading towards $_destination', style: TextStyle(color: Colors.black.withValues(alpha: 0.4), fontSize: 15, fontWeight: FontWeight.w600)),
+          Text('Heading towards $_destination', style: TextStyle(color: Colors.black.withOpacity(0.4), fontSize: 15, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -277,11 +277,11 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.black.withValues(alpha: 0.04), Colors.black.withValues(alpha: 0.01)],
+              colors: [Colors.black.withOpacity(0.04), Colors.black.withOpacity(0.01)],
               begin: Alignment.topLeft, end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+            border: Border.all(color: Colors.black.withOpacity(0.05)),
           ),
           child: Row(
             children: [
@@ -530,14 +530,6 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
     return const SizedBox.shrink(); // Obsolete, replaced by Discovery tab
   }
 
-  void _launchAmazon(String query) async {
-    final url = Uri.parse('https://www.amazon.com/s?k=$query');
-    try {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } catch (e) {
-      debugPrint('Could not launch Amazon: $e');
-    }
-  }
 
   String _getBagName(String? bagId) {
     if (bagId == null) return 'No Bag';
@@ -609,7 +601,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 100),
-              Icon(Icons.luggage_outlined, size: 64, color: Colors.black.withValues(alpha: 0.1)),
+              Icon(Icons.luggage_outlined, size: 64, color: Colors.black.withOpacity(0.1)),
               const SizedBox(height: 16),
               const Text('Your suitcase is empty', style: TextStyle(color: Colors.black26, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
@@ -676,9 +668,9 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: item.isPacked ? Colors.black.withValues(alpha: 0.03) : Colors.white,
+                    color: item.isPacked ? Colors.black.withOpacity(0.03) : Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: item.isPacked ? Colors.black.withValues(alpha: 0.05) : PackLiteTheme.cardBorder),
+                    border: Border.all(color: item.isPacked ? Colors.black.withOpacity(0.05) : PackLiteTheme.cardBorder),
                   ),
                   child: Row(
                     children: [
@@ -725,7 +717,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: item.needsToBuy ? Colors.orange.withValues(alpha: 0.1) : Colors.transparent,
+                              color: item.needsToBuy ? Colors.orange.withOpacity(0.1) : Colors.transparent,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
@@ -737,7 +729,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
                         ),
                         if (item.needsToBuy)
                           Tappable(
-                            onTap: () => _launchAmazon(item.name),
+                            onTap: () => AmazonUtils.launch(item.name),
                             child: Container(
                               margin: const EdgeInsets.only(left: 8),
                               padding: const EdgeInsets.all(8),
@@ -814,7 +806,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
       decoration: BoxDecoration(
         color: Colors.orange.shade50,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.orange.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -847,20 +839,20 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
               color: Colors.white,
               borderRadius: BorderRadius.circular(40),
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 40, offset: const Offset(0, 15)),
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 40, offset: const Offset(0, 15)),
               ],
             ),
             child: Icon(
               is100 ? Icons.luggage_rounded : Icons.luggage_outlined, 
               size: 100, 
-              color: Colors.black.withValues(alpha: 0.02),
+              color: Colors.black.withOpacity(0.02),
             ),
           ),
           Container(
             width: 260, height: 180,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(48),
-              border: Border.all(color: Colors.black.withValues(alpha: 0.03), width: 3),
+              border: Border.all(color: Colors.black.withOpacity(0.03), width: 3),
             ),
             child: CustomPaint(
               painter: SuitcaseBorderPainter(progress: _progress),
@@ -901,7 +893,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
             const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('ESTIMATED WEIGHT', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1, color: Colors.black26)),
               SizedBox(height: 4),
-              Text('⚖️ Cabin Bag', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+              Text('âš–ï¸ Cabin Bag', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
             ]),
             Text('${packedWeight.toStringAsFixed(1)} kg', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -1)),
           ]),
@@ -938,7 +930,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
       const SizedBox(height: 12),
       Row(children: [Text('\$${t.totalSpent.toInt()}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -1)), const SizedBox(width: 8), const Text('spent', style: TextStyle(color: Colors.black26, fontSize: 12, fontWeight: FontWeight.w700)), const Spacer(), const Text('GOAL: \$1000', style: TextStyle(color: Colors.black26, fontSize: 10, fontWeight: FontWeight.w900))]),
       const SizedBox(height: 8),
-      ClipRRect(borderRadius: BorderRadius.circular(100), child: LinearProgressIndicator(value: t.totalSpent / 1000.0, minHeight: 6, backgroundColor: Colors.black.withValues(alpha: 0.05), color: t.totalSpent > 800 ? Colors.red.shade400 : Colors.black)),
+      ClipRRect(borderRadius: BorderRadius.circular(100), child: LinearProgressIndicator(value: t.totalSpent / 1000.0, minHeight: 6, backgroundColor: Colors.black.withOpacity(0.05), color: t.totalSpent > 800 ? Colors.red.shade400 : Colors.black)),
       const SizedBox(height: 20),
     ]));
   }
@@ -957,7 +949,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.task_alt_rounded, size: 60, color: Colors.black.withValues(alpha: 0.1)),
+            Icon(Icons.task_alt_rounded, size: 60, color: Colors.black.withOpacity(0.1)),
             const SizedBox(height: 16),
             const Text('No trip tasks set', style: TextStyle(color: Colors.black26, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
@@ -980,9 +972,9 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: taskItem.isDone ? Colors.black.withValues(alpha: 0.03) : Colors.white,
+            color: taskItem.isDone ? Colors.black.withOpacity(0.03) : Colors.white,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: taskItem.isDone ? Colors.black.withValues(alpha: 0.05) : PackLiteTheme.cardBorder),
+            border: Border.all(color: taskItem.isDone ? Colors.black.withOpacity(0.05) : PackLiteTheme.cardBorder),
           ),
           child: Row(
             children: [
@@ -1043,7 +1035,7 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
           onSubmitted: (_) => isTaskTab ? _addTask() : _addItem(),
           decoration: InputDecoration(
             hintText: isTaskTab ? 'Add trip task...' : 'Add item manually...', 
-            hintStyle: TextStyle(color: Colors.black.withValues(alpha: 0.3), fontWeight: FontWeight.w800, fontSize: 18), 
+            hintStyle: TextStyle(color: Colors.black.withOpacity(0.3), fontWeight: FontWeight.w800, fontSize: 18), 
             filled: true, fillColor: const Color(0xFFF1F1ED), 
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none), 
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20)
