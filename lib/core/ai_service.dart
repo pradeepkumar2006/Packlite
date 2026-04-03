@@ -25,9 +25,9 @@ class AIService {
           ],
           "temperature": 0.5,
           "top_p": 1.0,
-          "max_tokens": 1024,
+          "max_tokens": 512, // Reduced tokens for speed
         }),
-      );
+      ).timeout(const Duration(seconds: 15)); // 15s Timeout
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
@@ -38,7 +38,8 @@ class AIService {
       }
     } catch (e) {
       print("AI Service Error: $e");
-      rethrow;
+      // Return a minimal valid JSON if it fails so we can use fallbacks
+      return "[]"; 
     }
   }
 
@@ -53,16 +54,40 @@ class AIService {
 
   /// Get travel insights for a specific location
   static Future<Map<String, dynamic>> getTravelInsights(String location) async {
-    const systemPrompt = "You are a premium travel expert for the PackLite app. Provide recommendations for a chosen location in STRICT JSON format. Include 'places' (landmarks), 'restaurants' (famous food), and 'hotels' (stays). Each item must have 'name', 'reason' (brief 2-line explanation), and 'vibe' (one word). Example: { \"location\": \"Paris\", \"places\": [{\"name\": \"Eiffel Tower\", \"reason\": \"Iconic iron lattice tower.\", \"vibe\": \"Iconic\"}], \"restaurants\": [], \"hotels\": [] }. NO MARKDOWN, ONLY JSON.";
-    final content = await _getCompletion(systemPrompt, "Explore: $location");
-    return jsonDecode(content);
+    const systemPrompt = "You are a premium travel expert. Provide recommendations for a location in STRICT JSON format. Include 'places' (landmarks), 'restaurants' (famous food), and 'hotels' (stays). NO MARKDOWN.";
+    try {
+      final content = await _getCompletion(systemPrompt, "Explore: $location");
+      if (content == "[]") throw Exception("Fallback");
+      return jsonDecode(content);
+    } catch (e) {
+      return {
+        "location": location,
+        "places": [{"name": "City Center", "reason": "Always a great starting point.", "vibe": "Busy"}],
+        "restaurants": [{"name": "Local Bistro", "reason": "Authentic local flavors.", "vibe": "Cozy"}],
+        "hotels": [{"name": "Grand Hotel", "reason": "Central and reliable.", "vibe": "Luxury"}]
+      };
+    }
   }
 
   /// Get packing suggestions for a specific location
   static Future<List<Map<String, dynamic>>> getPackingSuggestions(String location) async {
-    const systemPrompt = "You are a smart packing assistant. Based on the location, suggest 5-7 HIGHLY SPECIFIC essential items to pack. Return ONLY a JSON list of objects with 'name', 'category' (Clothing, Accessories, Electronics, Toiletries, or Documents), and 'reason' (very short). Example: [{\"name\": \"Sunscreen\", \"category\": \"Toiletries\", \"reason\": \"High UV index\"}]. NO MARKDOWN.";
-    final content = await _getCompletion(systemPrompt, "Packing essentials for: $location");
-    return List<Map<String, dynamic>>.from(jsonDecode(content));
+    const systemPrompt = "You are a smart packing assistant. Suggest 6 HIGHLY SPECIFIC items. Return STRICT JSON list with 'name', 'category', 'reason'. NO MARKDOWN.";
+    try {
+      final content = await _getCompletion(systemPrompt, "Packing essentials for: $location");
+      final list = List<Map<String, dynamic>>.from(jsonDecode(content));
+      if (list.isEmpty) throw Exception("Fallback");
+      return list;
+    } catch (e) {
+      // High Quality Fallback Items
+      return [
+        {"name": "Power Bank", "category": "Electronics", "reason": "Essential for long travel days."},
+        {"name": "Universal Adapter", "category": "Electronics", "reason": "Stay connected everywhere."},
+        {"name": "First Aid Kit", "category": "Toiletries", "reason": "Basic safety for every trip."},
+        {"name": "Reusable Bottle", "category": "Accessories", "reason": "Eco-friendly and stay hydrated."},
+        {"name": "Comfortable Sneakers", "category": "Clothing", "reason": "Perfect for city walks."},
+        {"name": "Passport Holder", "category": "Documents", "reason": "Keep essentials safe."}
+      ];
+    }
   }
 
   /// Smart chat with PackLite AI
