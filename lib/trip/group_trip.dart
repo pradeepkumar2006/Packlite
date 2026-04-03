@@ -167,44 +167,39 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 300, pinned: true, elevation: 0, backgroundColor: Colors.black,
-            leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20), onPressed: () => Navigator.pop(context)),
+            expandedHeight: 180, pinned: true, elevation: 0, 
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.white,
+            leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 20), onPressed: () => Navigator.pop(context)),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.black, Color(0xFF1A1A1A)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                child: Stack(
+                color: Colors.white,
+                padding: const EdgeInsets.fromLTRB(28, 80, 28, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Positioned(
-                      right: -50, top: -50,
-                      child: Opacity(opacity: 0.1, child: Icon(Icons.public_rounded, size: 350, color: Colors.blue.shade200)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_info.name.toUpperCase(), style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 32, letterSpacing: -1.5, height: 1.0)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on_rounded, size: 12, color: Colors.black26),
+                                const SizedBox(width: 4),
+                                Text(_info.destination.toUpperCase(), style: const TextStyle(color: Colors.black38, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.5)),
+                              ],
+                            ),
+                          ],
+                        ),
+                        _buildStatusBadge('MISSION: ACTIVE'),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(28, 100, 28, 32),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildBadge('MISSION: ACTIVE'),
-                          const SizedBox(height: 16),
-                          Text(_info.name.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 34, letterSpacing: -1.5, height: 1.05)),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on_rounded, size: 14, color: Colors.blueAccent),
-                              const SizedBox(width: 8),
-                              Text(_info.destination.toUpperCase(), style: const TextStyle(color: Colors.white38, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.2)),
-                            ],
-                          ),
-                          const Spacer(),
-                          _buildOverallProgress(),
-                        ],
-                      ),
-                    ),
+                    const Spacer(),
+                    _buildCleanProgress(),
                   ],
                 ),
               ),
@@ -213,16 +208,20 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
             actions: [
                IconButton(
                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (c) => SplittLiteScreen(trip: _getEffectiveTrip()))),
-                 icon: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white),
+                 icon: const Icon(Icons.account_balance_wallet_rounded, color: Colors.black),
                ),
-               IconButton(onPressed: _showInviteSheet, icon: const Icon(Icons.person_add_rounded, color: Colors.white)),
+               IconButton(onPressed: _showInviteSheet, icon: const Icon(Icons.person_add_rounded, color: Colors.black)),
+               const SizedBox(width: 8),
             ],
           ),
           SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.only(top: 24, bottom: 8),
-              decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
-              child: _buildTabBar(),
+            child: Column(
+              children: [
+                const Divider(height: 1, color: Color(0xFFF1F1ED)),
+                const SizedBox(height: 24),
+                _buildTabBar(),
+                const SizedBox(height: 8),
+              ],
             ),
           ),
           SliverFillRemaining(
@@ -243,22 +242,25 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildBadge(String text) {
+  Widget _buildStatusBadge(String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(100), border: Border.all(color: Colors.white24)),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: PackLiteTheme.background,
+        borderRadius: BorderRadius.circular(100),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.cyanAccent, shape: BoxShape.circle)),
+          Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 1.5)),
+          Text(text, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 1)),
         ],
       ),
     );
   }
 
-  Widget _buildOverallProgress() {
+  Widget _buildCleanProgress() {
     double totalProgress = _members.map((m) => m.progress).reduce((a, b) => a + b) / _members.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,14 +268,14 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-             const Text('GROUP READINESS', style: TextStyle(color: Colors.white30, fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1)),
-             Text('${(totalProgress * 100).toInt()}%', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10)),
+             const Text('LOGISTICS STATUS', style: TextStyle(color: Colors.black26, fontWeight: FontWeight.bold, fontSize: 8, letterSpacing: 1)),
+             Text('${(totalProgress * 100).toInt()}%', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 10)),
           ],
         ),
         const SizedBox(height: 8),
         ClipRRect(
-          borderRadius: BorderRadius.circular(100),
-          child: LinearProgressIndicator(value: totalProgress, minHeight: 4, backgroundColor: Colors.white10, color: Colors.cyanAccent),
+          borderRadius: BorderRadius.circular(10),
+          child: LinearProgressIndicator(value: totalProgress, minHeight: 4, backgroundColor: PackLiteTheme.background, color: Colors.black),
         ),
       ],
     );
@@ -283,12 +285,18 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
     return Container(
       height: 48,
       margin: const EdgeInsets.symmetric(horizontal: 24),
-      decoration: BoxDecoration(color: const Color(0xFFF1F1ED), borderRadius: BorderRadius.circular(24)),
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(color: const Color(0xFFF1F1ED), borderRadius: BorderRadius.circular(12)),
       child: TabBar(
-        controller: _tabCtrl, isScrollable: true, tabAlignment: TabAlignment.start, dividerColor: Colors.transparent,
-        indicator: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(20)),
-        indicatorPadding: const EdgeInsets.all(2),
-        labelColor: Colors.white, unselectedLabelColor: Colors.black38,
+        controller: _tabCtrl, 
+        isScrollable: true, 
+        tabAlignment: TabAlignment.start, 
+        dividerColor: Colors.transparent,
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+        indicator: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(10)),
+        labelColor: Colors.white, 
+        unselectedLabelColor: Colors.black38,
         labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.5),
         tabs: const [Tab(text: 'Tactical'), Tab(text: 'Personnel'), Tab(text: 'Assets'), Tab(text: 'Logistics'), Tab(text: 'Comms')],
       ),
@@ -774,4 +782,22 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
       actions: [Tappable(onTap: () { if (ctrl.text.isNotEmpty) setState(() => _getEffectiveTrip().toDoList.add(ToDoItem(id: DateTime.now().toString(), title: ctrl.text))); Navigator.pop(c); }, child: Container(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(16)), child: const Text('ADD', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900))))],
     ));
   }
+}
+
+class MeshPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 0.5;
+
+    for (double i = 0; i < size.width; i += 20) {
+      for (double j = 0; j < size.height; j += 20) {
+        canvas.drawCircle(Offset(i, j), 0.5, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
