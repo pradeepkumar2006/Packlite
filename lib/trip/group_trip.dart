@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../core/theme.dart';
 import '../core/data.dart';
-import '../core/amazon_utils.dart';
 import 'splitt_lite.dart';
 
 // ════════════════════════════════════════════
@@ -84,7 +83,6 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
   late List<Member> _members;
   late String _inviteCode;
   Trip? _activeTrip;
-  bool _isSuitcaseMode = true;
 
   final TextEditingController _customItemCtrl = TextEditingController();
   final TextEditingController _chatMsgCtrl = TextEditingController();
@@ -603,7 +601,7 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
               return Align(
                 alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
-                  maxWidth: MediaQuery.of(context).size.width * 0.7,
+                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(

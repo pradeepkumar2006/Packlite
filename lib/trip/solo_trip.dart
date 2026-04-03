@@ -87,8 +87,8 @@ class _SoloTripScreenState extends State<SoloTripScreen> with TickerProviderStat
       isCompleted: _isCompleted,
       currencyCode: widget.trip?.currencyCode ?? 'USD',
       conversionRate: widget.trip?.conversionRate ?? 1.0,
-      weatherIcon: widget.trip?.weatherIcon ?? 'â˜€ï¸',
-      temperature: widget.trip?.temperature ?? '--Â°',
+      weatherIcon: widget.trip?.weatherIcon ?? '☀️',
+      temperature: widget.trip?.temperature ?? '--°',
     ));
   }
 
