@@ -1,4 +1,3 @@
-
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,8 +27,8 @@ class GroupItem {
   String? claimedById;
   bool isPacked;
   String zone;
-  bool needsToBuy; // Added
-  String? bagId;   // Added
+  bool needsToBuy;
+  String? bagId;
 
   GroupItem({
     required this.id,
@@ -68,7 +67,7 @@ class TripInfo {
 }
 
 // ════════════════════════════════════════════
-// PREMIUM GROUP TRIP SCREEN
+// PREMIUM GROUP TRIP SCREEN (Refactored for HQ UI)
 // ════════════════════════════════════════════
 class GroupTripScreen extends StatefulWidget {
   final Trip? trip;
@@ -84,7 +83,7 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
   late List<GroupItem> _items;
   late List<Member> _members;
   late String _inviteCode;
-  Trip? _activeTrip; // Made nullable to avoid LateInitializationError
+  Trip? _activeTrip;
   bool _isSuitcaseMode = true;
 
   final TextEditingController _customItemCtrl = TextEditingController();
@@ -108,9 +107,8 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
       Member(id: 'mia', name: 'Mia Watson', initials: 'MW', progress: 0.90),
     ];
 
-    // Sync trip members for SplittLite
     if (widget.trip != null) {
-      if (widget.trip!.members.length <= 1) { // Default is just ['You']
+      if (widget.trip!.members.length <= 1) {
         widget.trip!.members.clear();
         widget.trip!.members.addAll(['You', 'Sam', 'Mia']);
       }
@@ -171,44 +169,41 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 260, pinned: true, elevation: 0, backgroundColor: Colors.black,
+            expandedHeight: 300, pinned: true, elevation: 0, backgroundColor: Colors.black,
             leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20), onPressed: () => Navigator.pop(context)),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                color: Colors.black,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.black, Color(0xFF1A1A1A)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
                 child: Stack(
                   children: [
                     Positioned(
-                      right: -30, top: -30,
-                      child: Opacity(opacity: 0.05, child: Icon(Icons.public_rounded, size: 300, color: Colors.white)),
+                      right: -50, top: -50,
+                      child: Opacity(opacity: 0.1, child: Icon(Icons.public_rounded, size: 350, color: Colors.blue.shade200)),
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(28, 100, 28, 32),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(100)),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.greenAccent, shape: BoxShape.circle)),
-                                const SizedBox(width: 8),
-                                const Text('LIVE SYNC', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 1)),
-                              ],
-                            ),
-                          ),
+                          _buildBadge('MISSION: ACTIVE'),
                           const SizedBox(height: 16),
-                          Text(_info.name.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 32, letterSpacing: -1.5, height: 1.1)),
+                          Text(_info.name.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 34, letterSpacing: -1.5, height: 1.05)),
                           const SizedBox(height: 12),
                           Row(
                             children: [
-                              const Icon(Icons.location_on_rounded, size: 14, color: Colors.white38),
+                              const Icon(Icons.location_on_rounded, size: 14, color: Colors.blueAccent),
                               const SizedBox(width: 8),
-                              Text(_info.destination.toUpperCase(), style: const TextStyle(color: Colors.white38, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
+                              Text(_info.destination.toUpperCase(), style: const TextStyle(color: Colors.white38, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.2)),
                             ],
                           ),
+                          const Spacer(),
+                          _buildOverallProgress(),
                         ],
                       ),
                     ),
@@ -220,15 +215,14 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
             actions: [
                IconButton(
                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (c) => SplittLiteScreen(trip: _getEffectiveTrip()))),
-                 icon: const Icon(Icons.payments_outlined, color: Colors.white),
-                 tooltip: 'SplittLite',
+                 icon: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white),
                ),
                IconButton(onPressed: _showInviteSheet, icon: const Icon(Icons.person_add_rounded, color: Colors.white)),
             ],
           ),
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.only(top: 24, bottom: 8),
               decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
               child: _buildTabBar(),
             ),
@@ -251,42 +245,104 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildTabBar() {
+  Widget _buildBadge(String text) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: const Color(0xFFF1F1ED), borderRadius: BorderRadius.circular(20)),
-      child: TabBar(
-        controller: _tabCtrl, isScrollable: true, tabAlignment: TabAlignment.start, dividerColor: Colors.transparent,
-        indicator: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(16)),
-        labelColor: Colors.white, unselectedLabelColor: Colors.black26,
-        labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5),
-        tabs: const [Tab(text: 'Board'), Tab(text: 'Team'), Tab(text: 'Catalogue'), Tab(text: 'Pack'), Tab(text: 'Chat')],
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(100), border: Border.all(color: Colors.white24)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.cyanAccent, shape: BoxShape.circle)),
+          const SizedBox(width: 8),
+          Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 1.5)),
+        ],
       ),
     );
   }
+
+  Widget _buildOverallProgress() {
+    double totalProgress = _members.map((m) => m.progress).reduce((a, b) => a + b) / _members.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+             const Text('GROUP READINESS', style: TextStyle(color: Colors.white30, fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1)),
+             Text('${(totalProgress * 100).toInt()}%', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(100),
+          child: LinearProgressIndicator(value: totalProgress, minHeight: 4, backgroundColor: Colors.white10, color: Colors.cyanAccent),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      height: 48,
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(color: const Color(0xFFF1F1ED), borderRadius: BorderRadius.circular(24)),
+      child: TabBar(
+        controller: _tabCtrl, isScrollable: true, tabAlignment: TabAlignment.start, dividerColor: Colors.transparent,
+        indicator: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(20)),
+        indicatorPadding: const EdgeInsets.all(2),
+        labelColor: Colors.white, unselectedLabelColor: Colors.black38,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.5),
+        tabs: const [Tab(text: 'Tactical'), Tab(text: 'Personnel'), Tab(text: 'Assets'), Tab(text: 'Logistics'), Tab(text: 'Comms')],
+      ),
+    );
+  }
+
+  // --- TABS IMPLEMENTATIONS ---
 
   Widget _buildBoardTab() {
     final trip = _getEffectiveTrip();
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        _buildStatCard('Destination', _info.destination, Icons.location_on_rounded),
-        const SizedBox(height: 16),
         Row(children: [
-          Expanded(child: _buildStatCard('Stay', _info.hotel, Icons.hotel_rounded)),
+          Expanded(child: _buildTacticalCard('STAY', _info.hotel, Icons.hotel_rounded, Colors.orange.shade100)),
           const SizedBox(width: 16),
-          Expanded(child: _buildStatCard('Trip Code', _inviteCode, Icons.vpn_key_rounded, isCode: true)),
+          Expanded(child: _buildTacticalCard('TOKEN', _inviteCode, Icons.key_rounded, Colors.blue.shade100, isCode: true)),
         ]),
         const SizedBox(height: 16),
         _buildExpenseMiniCard(),
         const SizedBox(height: 32),
         _buildToDoSection(trip),
         const SizedBox(height: 32),
-        const Text('TEAM OVERVIEW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black38)),
+        const Text('PERSONNEL OVERVIEW', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.black26, letterSpacing: 1.5)),
         const SizedBox(height: 16),
         _buildCircularTeamOverview(),
       ],
+    );
+  }
+
+  Widget _buildTacticalCard(String label, String value, IconData icon, Color bg, {bool isCode = false}) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: PackLiteTheme.cardBorder, width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, size: 16, color: Colors.black87),
+          ),
+          const SizedBox(height: 20),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 9, color: Colors.black26, letterSpacing: 1)),
+          const SizedBox(height: 4),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w900, fontSize: isCode ? 18 : 15, letterSpacing: isCode ? 2 : -0.2)),
+        ],
+      ),
     );
   }
 
@@ -294,173 +350,46 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('TRIP TASKS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black38, letterSpacing: 1.5)),
+        const Text('MISSION TASKS', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.black26, letterSpacing: 1.5)),
         const SizedBox(height: 16),
         Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: PackLiteTheme.background, borderRadius: BorderRadius.circular(24)),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF9F9F7),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: PackLiteTheme.cardBorder),
+          ),
           child: Column(
             children: [
               if (trip.toDoList.isEmpty)
-                const Center(child: Padding(padding: EdgeInsets.all(12), child: Text('No tasks added yet', style: TextStyle(color: Colors.black26, fontWeight: FontWeight.bold))))
+                const Center(child: Padding(padding: EdgeInsets.all(12), child: Text('No active tasks', style: TextStyle(color: Colors.black26, fontWeight: FontWeight.bold))))
               else
                 ...trip.toDoList.map((t) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: 16),
                   child: Row(
                     children: [
                       Tappable(
                         onTap: () => setState(() => t.isDone = !t.isDone),
-                        child: Icon(t.isDone ? Icons.check_circle_rounded : Icons.radio_button_off_rounded, size: 20, color: t.isDone ? Colors.black : Colors.black26),
+                        child: Icon(t.isDone ? Icons.check_circle_rounded : Icons.radio_button_off_rounded, size: 22, color: t.isDone ? Colors.green : Colors.black12),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(child: Text(t.title, style: TextStyle(fontWeight: FontWeight.w700, decoration: t.isDone ? TextDecoration.lineThrough : null, color: t.isDone ? Colors.black38 : Colors.black))),
+                      const SizedBox(width: 16),
+                      Expanded(child: Text(t.title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, decoration: t.isDone ? TextDecoration.lineThrough : null, color: t.isDone ? Colors.black26 : Colors.black))),
                     ],
                   ),
                 )).toList(),
               const Divider(height: 32),
               Tappable(
                 onTap: _showAddToDoDialog,
-                child: const Row(children: [Icon(Icons.add_task_rounded, size: 20), SizedBox(width: 12), Text('ADD TRIP TASK', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12))]),
+                child: Row(children: [
+                  Container(padding: const EdgeInsets.all(6), decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle), child: const Icon(Icons.add_rounded, size: 14, color: Colors.white)),
+                  const SizedBox(width: 12),
+                  const Text('NEW STRATEGIC TASK', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5))
+                ]),
               ),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  void _showAddToDoDialog() {
-    final ctrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Add Task', style: TextStyle(fontWeight: FontWeight.w900)),
-        content: TextField(
-          controller: ctrl, autofocus: true,
-          decoration: InputDecoration(hintText: 'e.g. Confirm hotel booking', filled: true, fillColor: PackLiteTheme.background, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)),
-        ),
-        actions: [
-          Tappable(
-            onTap: () {
-              if (ctrl.text.isEmpty) return;
-              setState(() => _getEffectiveTrip().toDoList.add(ToDoItem(id: DateTime.now().toString(), title: ctrl.text)));
-              Navigator.pop(context);
-            },
-            child: Container(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(12)), child: const Text('Add', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900))),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExpenseMiniCard() {
-    return Tappable(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => SplittLiteScreen(trip: _getEffectiveTrip()))),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(30), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10))]),
-        child: Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('TOTAL EXPENSES', style: TextStyle(color: Colors.white54, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.5)),
-                const SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text('Splitt', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -0.5)),
-                    Text('Lite', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -0.5)),
-                  ],
-                ),
-              ],
-            ),
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(16)),
-              child: const Icon(Icons.receipt_long_rounded, color: Colors.white, size: 24),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value, IconData icon, {bool isCode = false}) {
-    return Tappable(
-      onTap: isCode ? _showInviteSheet : () {},
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28), border: Border.all(color: PackLiteTheme.cardBorder)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 14, color: Colors.black38),
-                const SizedBox(width: 8),
-                Text(label.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1.2, color: Colors.black38)),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Text(
-              value,
-              style: TextStyle(
-                fontWeight: FontWeight.w900, 
-                fontSize: isCode ? 18 : 16, 
-                letterSpacing: isCode ? 4 : -0.2, 
-                color: Colors.black
-              ),
-              maxLines: 1, 
-              overflow: TextOverflow.ellipsis
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCircularTeamOverview() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _members.map((m) => Container(
-          width: 80,
-          margin: const EdgeInsets.only(right: 12),
-          child: Column(
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 52, height: 52,
-                    child: CircularProgressIndicator(
-                      value: (m.progress).toDouble(), 
-                      strokeWidth: 3, 
-                      backgroundColor: Colors.black.withValues(alpha: 0.05), 
-                      color: Colors.black
-                    ),
-                  ),
-                  CircleAvatar(
-                    radius: 20, 
-                    backgroundColor: Colors.black, 
-                    child: Text(m.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10))
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                m.name.split(' ').first, 
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.black),
-                maxLines: 1, overflow: TextOverflow.ellipsis
-              ),
-            ],
-          ),
-        )).toList(),
-      ),
     );
   }
 
@@ -474,17 +403,17 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
             itemBuilder: (context, i) {
               final m = _members[i];
               return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white, 
-                  borderRadius: BorderRadius.circular(28), 
-                  border: Border.all(color: PackLiteTheme.cardBorder)
+                  borderRadius: BorderRadius.circular(32), 
+                  border: Border.all(color: PackLiteTheme.cardBorder, width: 2)
                 ),
                 child: Row(
                   children: [
                     CircleAvatar(
-                      radius: 24,
+                      radius: 28,
                       backgroundColor: Colors.black,
                       child: Text(m.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
                     ),
@@ -493,19 +422,17 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(m.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                          Text(m.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
                           const SizedBox(height: 4),
-                          Text('${(m.progress * 100).toInt()}% READY', style: const TextStyle(color: Colors.black38, fontWeight: FontWeight.w900, fontSize: 10)),
+                          Text('${(m.progress * 100).toInt()}% OPERATIONAL', style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
                         ],
                       ),
                     ),
-                    Container(
-                      width: 50, height: 6,
-                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(100)),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: m.progress,
-                        child: Container(decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(100))),
+                    SizedBox(
+                      width: 60,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: LinearProgressIndicator(value: m.progress, minHeight: 6, backgroundColor: Colors.black12, color: Colors.black),
                       ),
                     ),
                   ],
@@ -515,20 +442,13 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          padding: const EdgeInsets.all(24),
           child: Tappable(
             onTap: _showInviteSheet,
             child: Container(
               width: double.infinity, height: 64,
-              decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(20)),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center, 
-                children: [
-                  Icon(Icons.person_add_rounded, color: Colors.white, size: 20), 
-                  SizedBox(width: 12), 
-                  Text('INVITE FRIENDS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1))
-                ]
-              ),
+              decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(32)),
+              child: const Center(child: Text('ENROLL PERSONNEL', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1))),
             ),
           ),
         ),
@@ -539,28 +459,38 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
   Widget _buildCatalogueTab() {
     return GridView.builder(
       padding: const EdgeInsets.all(24),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 1.1, mainAxisSpacing: 16, crossAxisSpacing: 16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 0.9, mainAxisSpacing: 16, crossAxisSpacing: 16),
       itemCount: _items.length,
       itemBuilder: (context, i) {
         final item = _items[i];
         final isMe = item.claimedById == 'me';
         return Tappable(
-          onTap: () => setState(() => item.claimedById = isMe ? null : 'me'),
-          child: Container(
-            padding: const EdgeInsets.all(16),
+          onTap: () {
+             PackLiteTheme.haptic();
+             setState(() => item.claimedById = isMe ? null : 'me');
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: isMe ? Colors.black : Colors.white, 
-              borderRadius: BorderRadius.circular(28),
-              border: isMe ? null : Border.all(color: PackLiteTheme.cardBorder),
+              borderRadius: BorderRadius.circular(32),
+              border: isMe ? null : Border.all(color: PackLiteTheme.cardBorder, width: 2),
+              boxShadow: isMe ? [BoxShadow(color: Colors.black38, blurRadius: 15, offset: const Offset(0, 8))] : null,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(item.icon, size: 24, color: isMe ? Colors.white : Colors.black),
-                const SizedBox(height: 12),
-                Text(item.name, style: TextStyle(color: isMe ? Colors.white : Colors.black, fontWeight: FontWeight.w900, fontSize: 13), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Icon(item.icon, size: 32, color: isMe ? Colors.white : Colors.black),
+                const SizedBox(height: 16),
+                Text(item.name, style: TextStyle(color: isMe ? Colors.white : Colors.black, fontWeight: FontWeight.w900, fontSize: 14), textAlign: TextAlign.center, maxLines: 1),
                 const SizedBox(height: 4),
-                Text('${(item.weight).toDouble().toStringAsFixed(1)} KG', style: TextStyle(color: isMe ? Colors.white54 : Colors.black26, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                Text('${(item.weight).toStringAsFixed(1)} KG', style: TextStyle(color: isMe ? Colors.white38 : Colors.black26, fontSize: 10, fontWeight: FontWeight.w900)),
+                const SizedBox(height: 12),
+                if (!isMe && item.claimedById != null)
+                  Text('CLAIMED BY ${item.claimedById!.toUpperCase()}', style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.w900, fontSize: 8))
+                else if (isMe)
+                  const Icon(Icons.check_circle_rounded, color: Colors.cyanAccent, size: 16),
               ],
             ),
           ),
@@ -569,181 +499,30 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
     );
   }
 
-
-  String _getBagName(String? bagId) {
-    if (bagId == null) return 'No Bag';
-    final bags = _getEffectiveTrip().bags;
-    final bag = bags.firstWhere((b) => b.id == bagId, orElse: () => Bag(id: '?', name: '?', type: '?'));
-    return bag.name;
-  }
-
-  void _showBagPicker(GroupItem item) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(32),
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('ASSIGN TO CONTAINER', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black38, letterSpacing: 1.5)),
-            const SizedBox(height: 16),
-            const Text('Choose where to pack this item', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
-            const SizedBox(height: 32),
-            ...(_getEffectiveTrip().bags).map((b) => Tappable(
-              onTap: () {
-                setState(() => item.bagId = b.id);
-                Navigator.pop(context);
-              },
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: item.bagId == b.id ? Colors.black : PackLiteTheme.background,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Icon(b.type == 'Backpack' ? Icons.backpack_rounded : Icons.luggage_rounded, color: item.bagId == b.id ? Colors.white : Colors.black),
-                    const SizedBox(width: 16),
-                    Text(b.name, style: TextStyle(fontWeight: FontWeight.w900, color: item.bagId == b.id ? Colors.white : Colors.black)),
-                    const Spacer(),
-                    if (item.bagId == b.id) const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-                  ],
-                ),
-              ),
-            )).toList(),
-            Tappable(
-              onTap: () {
-                setState(() => item.bagId = null);
-                Navigator.pop(context);
-              },
-              child: Container(
-                width: double.infinity, padding: const EdgeInsets.all(16),
-                child: const Center(child: Text('Clear Assignment', style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold))),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
   Widget _buildPackTab() {
     final myItems = _items.where((i) => i.claimedById == 'me').toList();
-    double current = 0.0;
-    for (var i in myItems) {
-      if (i.isPacked) {
-        current += i.weight;
-      }
-    }
+    double current = myItems.where((i) => i.isPacked).fold(0, (sum, i) => sum + i.weight);
 
     return Column(
       children: [
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.all(24),
-            itemCount: myItems.length + 2, // +1 for header, +1 for Edit List footer
+            itemCount: myItems.length + 1,
             itemBuilder: (context, index) {
               if (index == 0) {
                  return Column(
                    crossAxisAlignment: CrossAxisAlignment.start,
                    children: [
-                    Row(children: [
-                      const Text('READY TO FLY', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.2, color: Colors.black38)), 
-                      const Spacer(), 
-                      Transform.scale(scale: 0.8, child: Switch.adaptive(value: _isSuitcaseMode, activeColor: Colors.black, onChanged: (v) => setState(() => _isSuitcaseMode = v))),
-                    ]),
+                    const Text('LOGISTICS STATUS', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.5, color: Colors.black26)), 
                     const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(100),
-                      child: LinearProgressIndicator(value: (current / 7.0).toDouble().clamp(0.0, 1.0), minHeight: 8, backgroundColor: Colors.black.withValues(alpha: 0.05), color: Colors.black),
-                    ),
+                    _buildLogisticsBar(current),
                     const SizedBox(height: 32),
                    ],
                  );
               }
-              
-              if (index == myItems.length + 1) {
-                return _buildEditListSection();
-              }
-              
               final item = myItems[index - 1];
-              return Dismissible(
-                key: Key('group_item_${item.id}'),
-                direction: DismissDirection.endToStart,
-                onDismissed: (_) {},
-                confirmDismiss: (dir) async {
-                  if (dir == DismissDirection.endToStart) {
-                    _showBagPicker(item);
-                    return false;
-                  }
-                  return false;
-                },
-                background: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  alignment: Alignment.centerRight,
-                  decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(28)),
-                  child: const Icon(Icons.luggage_rounded, color: Colors.white, size: 24),
-                ),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: item.isPacked ? Colors.black.withValues(alpha: 0.02) : Colors.white,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: item.isPacked ? Colors.black.withValues(alpha: 0.05) : PackLiteTheme.cardBorder),
-                  ),
-                  child: Row(
-                    children: [
-                      Tappable(
-                        onTap: () => setState(() => item.isPacked = !item.isPacked),
-                        child: Icon(
-                          item.isPacked ? Icons.check_circle_rounded : Icons.radio_button_off_rounded,
-                          color: item.isPacked ? Colors.black : Colors.black26,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Tappable(
-                          onTap: () => _showBagPicker(item),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item.name, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, decoration: item.isPacked ? TextDecoration.lineThrough : null, color: item.isPacked ? Colors.black38 : Colors.black)),
-                              if (item.bagId != null)
-                                Text(_getBagName(item.bagId).toUpperCase(), style: const TextStyle(color: Colors.black38, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 1)),
-                              if (item.needsToBuy && !item.isPacked)
-                                const Text('NEEDS TO BUY', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 0.5)),
-                            ],
-                          ),
-                        ),
-                      ),
-                      if (!item.isPacked) ...[
-                        Tappable(
-                          onTap: () => setState(() => item.needsToBuy = !item.needsToBuy),
-                          child: Icon(
-                            item.needsToBuy ? Icons.shopping_cart_rounded : Icons.add_shopping_cart_rounded,
-                            size: 18, color: item.needsToBuy ? Colors.orange : Colors.black26,
-                          ),
-                        ),
-                        if (item.needsToBuy)
-                          const SizedBox(width: 12),
-                        if (item.needsToBuy)
-                          Tappable(
-                            onTap: () => AmazonUtils.launch(item.name),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(10)),
-                              child: const Icon(Icons.shopping_bag_outlined, size: 14, color: Colors.white),
-                            ),
-                          ),
-                      ],
-                    ],
-                  ),
-                ),
-              );
+              return _buildPackageTile(item);
             },
           ),
         ),
@@ -752,92 +531,57 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildManualAddItemBar() {
+  Widget _buildLogisticsBar(double weight) {
     return Container(
-      padding: EdgeInsets.fromLTRB(28, 16, 28, MediaQuery.of(context).padding.bottom + 16),
-      decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Colors.black.withValues(alpha: 0.05)))),
-      child: Row(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(32)),
+      child: Column(
         children: [
-          Expanded(
-            child: TextField(
-              controller: _customItemCtrl,
-              decoration: InputDecoration(
-                hintText: 'Add custom item...', 
-                hintStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.black26),
-                filled: true, fillColor: const Color(0xFFF1F1ED),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(100), borderSide: BorderSide.none),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              onSubmitted: (_) => _addManualItem(),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('TOTAL LOAD', style: TextStyle(color: Colors.white54, fontWeight: FontWeight.w900, fontSize: 9)),
+              Text('${weight.toStringAsFixed(1)} / 7.0 KG', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
+            ],
           ),
-          const SizedBox(width: 12),
-          Tappable(
-            onTap: _addManualItem,
-            child: Container(
-              height: 48, width: 48,
-              decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
-              child: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
-            ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: LinearProgressIndicator(value: (weight / 7.0).clamp(0.0, 1.0), minHeight: 6, backgroundColor: Colors.white12, color: Colors.cyanAccent),
           ),
         ],
       ),
     );
   }
 
-  void _addManualItem() {
-    if (_customItemCtrl.text.isEmpty) return;
-    PackLiteTheme.haptic();
-    setState(() {
-      _items.add(GroupItem(id: DateTime.now().toString(), name: _customItemCtrl.text, category: 'Manual', claimedById: 'me'));
-      _customItemCtrl.clear();
-    });
-  }
-
-  Widget _buildEditListSection() {
+  Widget _buildPackageTile(GroupItem item) {
     return Container(
-      margin: const EdgeInsets.only(top: 24, bottom: 40),
-      padding: const EdgeInsets.all(28),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.circular(32),
+        color: item.isPacked ? const Color(0xFFF5F5F5) : Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: item.isPacked ? Colors.transparent : PackLiteTheme.cardBorder, width: 2),
       ),
-      child: Column(
+      child: Row(
         children: [
-          const Icon(Icons.edit_note_rounded, color: Colors.white24, size: 32),
-          const SizedBox(height: 16),
-          const Text('MANAGE GROUP LIST', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
-          const SizedBox(height: 4),
-          const Text('Refine team items or reset the master list.', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: Tappable(
-                  onTap: () => setState(() => _tabCtrl.animateTo(4)), // Move to Catalogue
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(16)),
-                    child: const Center(child: Text('EDIT MODE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12))),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Tappable(
-                  onTap: () {
-                    PackLiteTheme.haptic();
-                    setState(() => _items.clear());
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
-                    child: const Center(child: Text('RESET ALL', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w900, fontSize: 12))),
-                  ),
-                ),
-              ),
-            ],
+          Tappable(
+            onTap: () => setState(() => item.isPacked = !item.isPacked),
+            child: Icon(item.isPacked ? Icons.check_circle_rounded : Icons.circle_outlined, size: 24, color: item.isPacked ? Colors.black : Colors.black12),
           ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.name, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, decoration: item.isPacked ? TextDecoration.lineThrough : null, color: item.isPacked ? Colors.black38 : Colors.black)),
+                if (item.bagId != null) 
+                  Text('STORED IN: ${_getBagName(item.bagId).toUpperCase()}', style: const TextStyle(color: Colors.black26, fontWeight: FontWeight.w900, fontSize: 8, letterSpacing: 0.5)),
+              ],
+            ),
+          ),
+          if (!item.isPacked)
+            IconButton(onPressed: () => _showBagPicker(item), icon: const Icon(Icons.storage_rounded, size: 18, color: Colors.black26)),
         ],
       ),
     );
@@ -848,145 +592,188 @@ class _GroupTripScreenState extends State<GroupTripScreen> with TickerProviderSt
       children: [
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            reverse: true,
+            padding: const EdgeInsets.all(24),
             itemCount: _messages.length,
-            itemBuilder: (context, index) {
-              final msg = _messages.reversed.toList()[index];
+            itemBuilder: (context, i) {
+              final msg = _messages[i];
               if (msg.isSystem) {
-                return Center(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 24),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(100)),
-                    child: Text(msg.text.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.black38, letterSpacing: 1.5)),
-                  ),
-                );
+                return Center(child: Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: Text(msg.text.toUpperCase(), style: const TextStyle(color: Colors.black26, fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1))));
               }
-
-              final isMe = msg.senderId == 'me';
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Column(
-                  crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                  children: [
-                    if (!isMe)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12, bottom: 6),
-                        child: Text(msg.senderId.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.black26, letterSpacing: 1.2)),
-                      ),
-                    Container(
-                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: isMe ? Colors.black : Colors.white,
-                        borderRadius: BorderRadius.only(
-                          topLeft: const Radius.circular(24),
-                          topRight: const Radius.circular(24),
-                          bottomLeft: Radius.circular(isMe ? 24 : 4),
-                          bottomRight: Radius.circular(isMe ? 4 : 24),
-                        ),
-                        border: isMe ? null : Border.all(color: PackLiteTheme.cardBorder),
-                        boxShadow: isMe ? [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 15, offset: const Offset(0, 8))] : null,
-                      ),
-                      child: Text(
-                        msg.text,
-                        style: TextStyle(color: isMe ? Colors.white : Colors.black, fontWeight: FontWeight.w600, fontSize: 13, height: 1.4),
-                      ),
+              bool isMe = msg.senderId == 'me';
+              return Align(
+                alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  maxWidth: MediaQuery.of(context).size.width * 0.7,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isMe ? Colors.black : const Color(0xFFF1F1ED),
+                    borderRadius: BorderRadius.circular(20).copyWith(
+                      bottomRight: isMe ? const Radius.circular(0) : const Radius.circular(20),
+                      bottomLeft: !isMe ? const Radius.circular(0) : const Radius.circular(20),
                     ),
-                  ],
+                  ),
+                  child: Text(msg.text, style: TextStyle(color: isMe ? Colors.white : Colors.black, fontWeight: FontWeight.w700, fontSize: 14)),
                 ),
               );
             },
           ),
         ),
-        _buildChatInputBar(),
+        _buildChatInput(),
       ],
     );
   }
 
-  Widget _buildChatInputBar() {
+  Widget _buildChatInput() {
     return Container(
-      padding: EdgeInsets.fromLTRB(28, 16, 28, MediaQuery.of(context).viewInsets.bottom + 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.black.withValues(alpha: 0.05))),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 30, offset: const Offset(0, -10))],
-      ),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 16),
+      decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Color(0xFFF1F1ED)))),
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(color: const Color(0xFFF1F1ED), borderRadius: BorderRadius.circular(100)),
-              child: TextField(
-                controller: _chatMsgCtrl,
-                decoration: const InputDecoration(
-                  hintText: 'Share something...', 
-                  hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.black26),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                ),
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                onSubmitted: (_) => _sendChatMessage(),
-              ),
+            child: TextField(
+              controller: _chatMsgCtrl,
+              decoration: InputDecoration(hintText: 'Transmit message...', filled: true, fillColor: const Color(0xFFF1F1ED), border: OutlineInputBorder(borderRadius: BorderRadius.circular(100), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
             ),
           ),
           const SizedBox(width: 12),
           Tappable(
-            onTap: _sendChatMessage,
-            child: Container(
-              height: 48, width: 48,
-              decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
-              child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
-            ),
+            onTap: () {
+              if (_chatMsgCtrl.text.isEmpty) return;
+              setState(() {
+                _messages.add(ChatMessage(id: DateTime.now().toString(), senderId: 'me', text: _chatMsgCtrl.text, time: DateTime.now()));
+                _chatMsgCtrl.clear();
+              });
+            },
+            child: Container(height: 48, width: 48, decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle), child: const Icon(Icons.send_rounded, color: Colors.white, size: 20)),
           ),
         ],
       ),
     );
   }
 
-  void _sendChatMessage() {
-    if (_chatMsgCtrl.text.isEmpty) return;
-    PackLiteTheme.haptic();
-    setState(() {
-      _messages.add(ChatMessage(id: DateTime.now().toString(), senderId: 'me', text: _chatMsgCtrl.text, time: DateTime.now()));
-      _chatMsgCtrl.clear();
-    });
-  }
+  // --- HELPERS FROM PREVIOUS VERSION (STABLE) ---
 
   void _showInviteSheet() {
     showModalBottomSheet(
-      context: context, backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      context: context, backgroundColor: Colors.white, 
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+      builder: (c) => Padding(
         padding: const EdgeInsets.all(32),
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Text('INVITE FRIENDS', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black38, letterSpacing: 1.5)),
-          const SizedBox(height: 16),
-          const Text('Share this code with your group', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
-          const SizedBox(height: 32),
-          Container(
-            padding: const EdgeInsets.all(24),
-            width: double.infinity,
-            decoration: BoxDecoration(color: PackLiteTheme.background, borderRadius: BorderRadius.circular(20)),
-            child: Center(child: Text(_inviteCode, style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: 4))),
-          ),
-          const SizedBox(height: 32),
-          Tappable(
-            onTap: () {
-              Clipboard.setData(ClipboardData(text: _inviteCode));
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Code copied to clipboard!')));
-            },
-            child: Container(
-              width: double.infinity, height: 60,
-              decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(16)),
-              child: const Center(child: Text('COPY CODE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900))),
-            ),
-          ),
-        ]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('ENROLL PERSONNEL', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+            const SizedBox(height: 24),
+            Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: PackLiteTheme.background, borderRadius: BorderRadius.circular(24)), child: Text(_inviteCode, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 32, letterSpacing: 8))),
+            const SizedBox(height: 24),
+            const Text('Share this mission token with your team to sync logistics.', textAlign: TextAlign.center, style: TextStyle(color: Colors.black38, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 32),
+            Tappable(onTap: () => Navigator.pop(c), child: Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(16)), child: const Center(child: Text('CLOSE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900))))),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget _buildCircularTeamOverview() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _members.map((m) => Container(
+          width: 80, margin: const EdgeInsets.only(right: 12),
+          child: Column(
+            children: [
+              CircleAvatar(radius: 24, backgroundColor: Colors.black, child: Text(m.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10))),
+              const SizedBox(height: 12),
+              Text(m.name.split(' ').first, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11), maxLines: 1),
+            ],
+          ),
+        )).toList(),
+      ),
+    );
+  }
+
+  Widget _buildExpenseMiniCard() {
+    return Tappable(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => SplittLiteScreen(trip: _getEffectiveTrip()))),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(32)),
+        child: Row(
+          children: [
+            const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('TREASURY STATUS', style: TextStyle(color: Colors.white54, fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1.5)),
+              SizedBox(height: 8),
+              Text('SplittLite 2.0', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+            ]),
+            const Spacer(),
+            Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.payments_rounded, color: Colors.white)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getBagName(String? bagId) {
+    if (bagId == null) return '?';
+    final bags = _getEffectiveTrip().bags;
+    return bags.any((b) => b.id == bagId) ? bags.firstWhere((b) => b.id == bagId).name : 'STORAGE';
+  }
+
+  void _showBagPicker(GroupItem item) {
+    showModalBottomSheet(
+      context: context, backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('ASSIGN ASSET STORAGE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Colors.black38, letterSpacing: 2)),
+            const SizedBox(height: 32),
+            ...(_getEffectiveTrip().bags).map((b) => Tappable(
+              onTap: () { setState(() => item.bagId = b.id); Navigator.pop(context); },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(color: item.bagId == b.id ? Colors.black : const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(20)),
+                child: Row(children: [Icon(Icons.inventory_2_rounded, color: item.bagId == b.id ? Colors.white : Colors.black), const SizedBox(width: 16), Text(b.name, style: TextStyle(fontWeight: FontWeight.w900, color: item.bagId == b.id ? Colors.white : Colors.black))]),
+              ),
+            )).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildManualAddItemBar() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 16),
+      decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Color(0xFFF1F1ED)))),
+      child: Row(
+        children: [
+          Expanded(child: TextField(controller: _customItemCtrl, decoration: InputDecoration(hintText: 'Add tactical gear...', filled: true, fillColor: const Color(0xFFF1F1ED), border: OutlineInputBorder(borderRadius: BorderRadius.circular(100), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)), onSubmitted: (v) => _addManualItem())),
+          const SizedBox(width: 12),
+          Tappable(onTap: _addManualItem, child: Container(height: 48, width: 48, decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle), child: const Icon(Icons.add_rounded, color: Colors.white))),
+        ],
+      ),
+    );
+  }
+
+  void _addManualItem() {
+    if (_customItemCtrl.text.isEmpty) return;
+    PackLiteTheme.haptic();
+    setState(() { _items.add(GroupItem(id: DateTime.now().toString(), name: _customItemCtrl.text, category: 'Manual', claimedById: 'me')); _customItemCtrl.clear(); });
+  }
+
+  void _showAddToDoDialog() {
+    final ctrl = TextEditingController();
+    showDialog(context: context, builder: (c) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      title: const Text('Add Objective', style: TextStyle(fontWeight: FontWeight.w900)),
+      content: TextField(controller: ctrl, autofocus: true, decoration: const InputDecoration(hintText: 'Enter mission task')),
+      actions: [Tappable(onTap: () { if (ctrl.text.isNotEmpty) setState(() => _getEffectiveTrip().toDoList.add(ToDoItem(id: DateTime.now().toString(), title: ctrl.text))); Navigator.pop(c); }, child: Container(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(16)), child: const Text('ADD', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900))))],
+    ));
   }
 }

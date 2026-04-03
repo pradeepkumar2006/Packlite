@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../trip/solo_trip.dart';
 import '../trip/group_trip.dart';
 import '../trip/solo_setup.dart';
+import '../trip/group_setup.dart';
 import '../core/theme.dart';
 import '../core/data.dart';
 import '../explore/explore_discover.dart';
@@ -1186,7 +1187,7 @@ class _HomeScreenState extends State<HomeScreen> {
           context,
           MaterialPageRoute(
             builder: (c) =>
-                isSolo ? const SoloSetupScreen() : const GroupTripScreen(),
+                isSolo ? const SoloSetupScreen() : const GroupSetupScreen(),
           ),
         );
         if (result == true) {
